@@ -1,0 +1,25 @@
+# Java
+backend/target/
+*.class
+*.jar
+
+# Python
+analysis/__pycache__/
+analysis/.venv/
+*.pyc
+.env
+
+# Vue / Node
+frontend/node_modules/
+frontend/dist/
+
+# Database
+*.sql.bak
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
