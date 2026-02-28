@@ -31,3 +31,13 @@ logging:
     com.edi: DEBUG
     org.springframework: INFO
     org.hibernate.SQL: DEBUG
+
+edi:
+  intake:
+    sample-dir: ${EDI_SAMPLE_DIR:../edi-samples}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,mappings
