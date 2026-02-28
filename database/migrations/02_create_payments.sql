@@ -1,5 +1,5 @@
 CREATE TABLE payments (
-    id                  SERIAL PRIMARY KEY,
+    id                  BIGSERIAL PRIMARY KEY,
     payment_id          VARCHAR(50) UNIQUE NOT NULL,      -- unique payment identifier
     claim_id            VARCHAR(50) REFERENCES claims(claim_id),              
     provider_id         VARCHAR(50) NOT NULL,              -- pay-to prov NPI

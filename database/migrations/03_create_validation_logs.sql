@@ -1,5 +1,5 @@
 CREATE TABLE validation_logs (
-    id              SERIAL PRIMARY KEY,
+    id              BIGSERIAL PRIMARY KEY,
     claim_id        VARCHAR(50) REFERENCES claims(claim_id),
     validation_type VARCHAR(50) NOT NULL,     -- DUPLICATE | STRUCTURE | ELIGIBILITY | BALANCE
     status          VARCHAR(20) NOT NULL,     -- PASS | FAIL | WARNING

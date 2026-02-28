@@ -1,6 +1,6 @@
 -- Claims table: stores parsed 837 claim data
 CREATE TABLE claims (
-    id                  SERIAL PRIMARY KEY,
+    id                  BIGSERIAL PRIMARY KEY,
     claim_id            VARCHAR(50) UNIQUE NOT NULL,      -- ICN / claim control number
     patient_id          VARCHAR(50) NOT NULL,              -- anonymized patient identifier
     provider_id         VARCHAR(50) NOT NULL,              -- rendering provider NPI
