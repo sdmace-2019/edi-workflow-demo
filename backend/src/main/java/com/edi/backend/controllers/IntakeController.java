@@ -1,5 +1,6 @@
 package com.edi.backend.controllers;
 
+import com.edi.backend.services.SampleEdiIngestService;
 import com.edi.backend.services.SampleFolderIntakeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -12,9 +13,11 @@ import java.io.IOException;
 public class IntakeController {
 
     private final SampleFolderIntakeService intakeService;
+    private final SampleEdiIngestService ingestService;
 
-    public IntakeController(SampleFolderIntakeService intakeService) {
+    public IntakeController(SampleFolderIntakeService intakeService, SampleEdiIngestService ingestService) {
         this.intakeService = intakeService;
+        this.ingestService = ingestService;
     }
 
     @PostMapping("/samples")
@@ -25,6 +28,17 @@ public class IntakeController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to read sample folder", e);
+        }
+    }
+
+    @PostMapping("/samples/ingest")
+    public SampleEdiIngestService.IngestResult ingestSamples() {
+        try {
+            return ingestService.ingestSamples();
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Sample ingest failed", e);
         }
     }
 }
