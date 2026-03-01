@@ -2,9 +2,12 @@ package com.edi.backend.services;
 
 import com.edi.backend.config.EdiIntakeProperties;
 import com.edi.backend.models.Claim;
+import com.edi.backend.models.Payment;
+import com.edi.backend.parsers.Edi835Parser;
 import com.edi.backend.parsers.Edi837Parser;
 import com.edi.backend.parsers.EdiTransactionClassifier;
 import com.edi.backend.repositories.ClaimRepository;
+import com.edi.backend.repositories.PaymentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,17 +21,25 @@ import java.util.List;
 @Service
 public class SampleEdiIngestService {
 
-    public record FileResult(String fileName, String transactionSet, int claimsSaved, int claimsSkipped, String message) {}
-    public record IngestResult(String resolvedDirectory, int filesProcessed, int totalClaimsSaved, List<FileResult> results) {}
+    public record FileResult(String fileName, String transactionSet, int claimsSaved, int claimsSkipped, int paymentsSaved, int paymentsSkipped, String message) {}
+    public record IngestResult(String resolvedDirectory, int filesProcessed, int totalClaimsSaved, int totalPaymentsSaved, List<FileResult> results) {}
 
     private final EdiIntakeProperties props;
     private final Edi837Parser edi837Parser;
+    private final Edi835Parser edi835Parser;
     private final ClaimRepository claimRepository;
+    private final PaymentRepository paymentRepository;
 
-    public SampleEdiIngestService(EdiIntakeProperties props, Edi837Parser edi837Parser, ClaimRepository claimRepository) {
+    public SampleEdiIngestService(EdiIntakeProperties props,
+                                  Edi837Parser edi837Parser,
+                                  Edi835Parser edi835Parser,
+                                  ClaimRepository claimRepository,
+                                  PaymentRepository paymentRepository) {
         this.props = props;
         this.edi837Parser = edi837Parser;
+        this.edi835Parser = edi835Parser;
         this.claimRepository = claimRepository;
+        this.paymentRepository = paymentRepository;
     }
 
     @Transactional
@@ -40,6 +51,7 @@ public class SampleEdiIngestService {
 
         List<FileResult> results = new ArrayList<>();
         int totalSaved = 0;
+        int totalPaymentsSaved = 0;
 
         try (var stream = Files.list(dir)) {
             List<Path> files = stream
@@ -58,11 +70,30 @@ public class SampleEdiIngestService {
                 String tx = EdiTransactionClassifier.detectTransactionSetId(edi).orElse("UNKNOWN");
 
                 if ("835".equals(tx)) {
-                    results.add(new FileResult(fileName, tx, 0, 0, "Skipped (835 not implemented yet)"));
+                    List<Payment> payments = edi835Parser.parsePayments(edi, fileName);
+                    int pSaved = 0;
+                    int pSkipped = 0;
+                    for (Payment p : payments) {
+                        if (isBlank(p.getPaymentId()) || isBlank(p.getClaimId())
+                                || isBlank(p.getProviderId()) || isBlank(p.getPayerId())
+                                || p.getPaymentDate() == null
+                                || p.getPaymentAmount() == null) {
+                            pSkipped++;
+                            continue;
+                        }
+                        if (paymentRepository.existsByPaymentId(p.getPaymentId())) {
+                            pSkipped++;
+                            continue;
+                        }
+                        paymentRepository.save(p);
+                        pSaved++;
+                    }
+                    totalPaymentsSaved += pSaved;
+                    results.add(new FileResult(fileName, tx, 0, 0, pSaved, pSkipped, "OK"));
                     continue;
                 }
                 if (!"837".equals(tx)) {
-                    results.add(new FileResult(fileName, tx, 0, 0, "Skipped (unsupported transaction set)"));
+                    results.add(new FileResult(fileName, tx, 0, 0, 0, 0, "Skipped (unsupported transaction set)"));
                     continue;
                 }
 
@@ -90,10 +121,10 @@ public class SampleEdiIngestService {
                 }
 
                 totalSaved += saved;
-                results.add(new FileResult(fileName, tx, saved, skipped, "OK"));
+                results.add(new FileResult(fileName, tx, saved, skipped, 0, 0, "OK"));
             }
 
-            return new IngestResult(dir.toString(), files.size(), totalSaved, results);
+            return new IngestResult(dir.toString(), files.size(), totalSaved, totalPaymentsSaved, results);
         }
     }
 
