@@ -26,6 +26,10 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
 logging:
   level:
     com.edi: DEBUG

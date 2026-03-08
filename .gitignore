@@ -25,3 +25,11 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Copilot / local dev artifacts — not part of the project source
+.github/
+COPILOT_CONTEXT.md
+demo_checklist.md
+compile-error.txt
+compile-errors.txt
+mappings-raw.json
