@@ -8,4 +8,5 @@ public interface ValidationLogRepository extends JpaRepository<ValidationLog, Lo
     List<ValidationLog> findByClaimIdOrderByValidationTypeAsc(String claimId);
     boolean existsByClaimIdAndValidationType(String claimId, String validationType);
     void deleteByClaimId(String claimId);
+    long countByStatus(String status);
 }

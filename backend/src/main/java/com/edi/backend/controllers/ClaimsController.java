@@ -8,6 +8,11 @@ import com.edi.backend.services.ValidationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,10 +32,12 @@ public class ClaimsController {
         this.validationService = validationService;
     }
 
-    /** GET /api/claims — list all claims */
+    /** GET /api/claims — paginated list of claims */
     @GetMapping
-    public List<Claim> getAllClaims() {
-        return claimRepository.findAll();
+    public Page<Claim> getAllClaims(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return claimRepository.findAll(PageRequest.of(page, size, Sort.by("id").ascending()));
     }
 
     /** GET /api/claims/{claimId} — single claim */
@@ -66,5 +73,23 @@ public class ClaimsController {
     public ResponseEntity<Map<String, Integer>> validateAll() {
         int total = validationService.validateAll();
         return ResponseEntity.ok(Map.of("logsWritten", total));
+    }
+
+        /** GET /api/claims/summary — counts by status, total billed */
+    @GetMapping("/summary")
+    public ResponseEntity<Map<String, Object>> getSummary() {
+        Map<String, Object> summary = new HashMap<>();
+
+        summary.put("totalClaims", claimRepository.count());
+
+        Map<String, Long> byStatus = new HashMap<>();
+        for (Object[] row : claimRepository.countByStatus()) {
+            byStatus.put((String) row[0], (Long) row[1]);
+        }
+        summary.put("byStatus", byStatus);
+
+        summary.put("totalBilled", claimRepository.sumBilledAmount());
+
+        return ResponseEntity.ok(summary);
     }
 }

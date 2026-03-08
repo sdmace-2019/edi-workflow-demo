@@ -2,6 +2,8 @@
 backend/target/
 *.class
 *.jar
+backend/boot-run-errors.txt
+backend/compile-errors.txt
 
 # Python
 analysis/__pycache__/
