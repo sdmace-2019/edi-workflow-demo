@@ -211,4 +211,6 @@ The integration tests require PostgreSQL to be running with the `edi_demo` datab
 
 ## Author
 
-Built by Shawn as a portfolio demonstration of healthcare EDI domain knowledge and full-stack Java/Vue development skills.
+Shawn Mace — Healthcare IT specialist with 4 years building production EDI systems for high-volume revenue cycle operations, and 3 years of prior clinical experience as a Certified Medical Assistant. I build tooling based on real-world needs.
+
+[LinkedIn](https://www.linkedin.com/in/sdm1110) | [GitHub](https://github.com/sdmace-2019)
